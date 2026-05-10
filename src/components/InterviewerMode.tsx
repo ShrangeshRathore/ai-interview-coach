@@ -55,19 +55,20 @@ const InterviewerMode: React.FC<InterviewerModeProps> = ({ onExitInterview }) =>
         "Welcome to your Power Platform and Copilot Studio developer interview. I'll be asking you 8 questions to assess your skills and experience. After each question, I'll provide an example of how you could answer it. Let's begin!",
         () => {
           setIsSpeaking(false);
-          askNextQuestion();
+          askNextQuestion(0);
         }
       );
     }, 500);
   };
 
-  const askNextQuestion = () => {
-    if (!session || currentQuestionIndex >= session.questions.length) {
+  const askNextQuestion = (index?: number) => {
+    const questionIndex = index ?? currentQuestionIndex;
+    if (!session || questionIndex >= session.questions.length) {
       endInterview();
       return;
     }
 
-    const question = session.questions[currentQuestionIndex];
+    const question = session.questions[questionIndex];
     setShowExample(false);
     setAwaitingNext(false);
     setAnswerAnalysis(null);
@@ -148,9 +149,7 @@ const InterviewerMode: React.FC<InterviewerModeProps> = ({ onExitInterview }) =>
     setUserAnswer(null);
     setAnswerAnalysis(null);
 
-    setTimeout(() => {
-      askNextQuestion();
-    }, 500);
+    askNextQuestion(nextIndex);
   };
 
   const endInterview = () => {
@@ -210,10 +209,10 @@ const InterviewerMode: React.FC<InterviewerModeProps> = ({ onExitInterview }) =>
   };
 
   useEffect(() => {
-    if (sessionStarted && currentQuestionIndex === 0) {
-      setTimeout(() => askNextQuestion(), 3000);
+    if (sessionStarted) {
+      setTimeout(() => askNextQuestion(0), 3000);
     }
-  }, [sessionStarted, currentQuestionIndex]);
+  }, [sessionStarted]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
