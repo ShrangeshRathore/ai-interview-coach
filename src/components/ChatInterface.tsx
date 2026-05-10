@@ -3,6 +3,7 @@ import { Message } from '../types';
 import MessageList from './MessageList';
 import VoiceControls from './VoiceControls';
 import InterviewerMode from './InterviewerMode';
+import { fetchWebResource } from '../utils/downloadUtils';
 
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -43,7 +44,7 @@ const ChatInterface: React.FC = () => {
     }
   }
 
-  const generateCoachResponse = (userMessage: string): string => {
+  const generateCoachResponse = async (userMessage: string): Promise<string> => {
     const message = userMessage.toLowerCase();
 
     // Interview-specific responses
@@ -71,6 +72,12 @@ const ChatInterface: React.FC = () => {
       return "Always prepare 3-5 thoughtful questions: 1) About the role/team dynamics, 2) Company challenges/goals, 3) Next steps in the process, 4) Team/company culture, 5) Growth opportunities. Never ask about salary/benefits in first interview.";
     }
 
+    // Try to fetch web resources for more advanced topics
+    const webTip = await fetchWebResource(userMessage);
+    if (webTip) {
+      return `${webTip}\n\nAdditionally, here's some general advice: Practice your answers out loud and time yourself. Focus on specific examples rather than generic statements.`;
+    }
+
     // General responses
     const generalResponses = [
       "That's an excellent question to practice! Let me give you some tips...",
@@ -83,7 +90,7 @@ const ChatInterface: React.FC = () => {
     return generalResponses[Math.floor(Math.random() * generalResponses.length)];
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputText.trim()) return;
 
     // Add user message
@@ -99,10 +106,10 @@ const ChatInterface: React.FC = () => {
     setIsThinking(true);
 
     // Simulate coach response delay
-    setTimeout(() => {
+    setTimeout(async () => {
       const coachMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: generateCoachResponse(inputText),
+        text: await generateCoachResponse(inputText),
         sender: 'coach',
         timestamp: new Date(),
       };

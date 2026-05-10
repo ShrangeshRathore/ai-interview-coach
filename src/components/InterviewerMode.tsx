@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { InterviewSession, InterviewQuestion, InterviewFeedback } from '../types/interview';
 import { getRandomQuestions } from '../data/interviewQuestions';
 import VoiceControls from './VoiceControls';
+import { downloadTextAsFile, generateQuestionAnalysisText, generateSessionSummaryText } from '../utils/downloadUtils';
 
 interface InterviewerModeProps {
   onExitInterview: () => void;
@@ -345,6 +346,15 @@ const InterviewerMode: React.FC<InterviewerModeProps> = ({ onExitInterview }) =>
             {/* Action Buttons */}
             <div className="flex gap-4 justify-center pt-6">
               <button
+                onClick={() => {
+                  const content = generateSessionSummaryText(session);
+                  downloadTextAsFile(content, `interview-session-summary.txt`);
+                }}
+                className="px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
+              >
+                📥 Download Summary
+              </button>
+              <button
                 onClick={() => window.location.reload()}
                 className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors"
               >
@@ -431,6 +441,23 @@ const InterviewerMode: React.FC<InterviewerModeProps> = ({ onExitInterview }) =>
                 <div className="bg-yellow-500/20 rounded-lg p-6 border border-yellow-400/30">
                   <h2 className="text-xl font-semibold text-yellow-300 mb-4">📝 Your Answer Analysis</h2>
                   <p className="text-white/90 text-lg leading-relaxed">{answerAnalysis}</p>
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      onClick={() => {
+                        const content = generateQuestionAnalysisText(
+                          currentQuestion.question,
+                          userAnswer || '',
+                          answerAnalysis,
+                          currentQuestion.expectedAnswer,
+                          currentQuestion.keyPoints
+                        );
+                        downloadTextAsFile(content, `question-${currentQuestionIndex + 1}-analysis.txt`);
+                      }}
+                      className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg transition-colors text-sm"
+                    >
+                      📥 Download Analysis
+                    </button>
+                  </div>
                 </div>
               )}
               <div className="bg-green-500/20 rounded-lg p-6 border border-green-400/30">
